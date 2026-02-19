@@ -21,6 +21,9 @@
           Create
         </button>
       </div>
+      @if (createError) {
+        <p style="color: #dc2626; font-size: 13px; margin-top: 8px;">{{ createError }}</p>
+      }
     </div>
 
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin-bottom: 32px;" />
@@ -31,7 +34,7 @@
         <input
           type="text"
           [(ngModel)]="joinCode"
-          placeholder="Board code"
+          placeholder="Board name"
           (keyup.enter)="joinBoard()"
           style="flex: 1; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none;"
         />
@@ -44,6 +47,9 @@
           Join
         </button>
       </div>
+      @if (joinError) {
+        <p style="color: #dc2626; font-size: 13px; margin-top: 8px;">{{ joinError }}</p>
+      }
     </div>
   </div>
 </div>

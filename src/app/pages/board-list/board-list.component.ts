@@ -1,7 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { RetroBoardFirebaseService } from '../../services/retro-board-firebase.service';
+import {
+  RetroBoardFirebaseService,
+  slugify,
+} from '../../services/retro-board-firebase.service';
 
 @Component({
   selector: 'app-board-list',
@@ -15,17 +18,35 @@ export class BoardListComponent {
 
   boardName = '';
   joinCode = '';
+  createError = '';
+  joinError = '';
 
   async createBoard(): Promise<void> {
+    this.createError = '';
     if (!this.boardName.trim()) return;
-    const boardId = await this.retroService.createBoard(
-      this.boardName.trim()
-    );
-    this.router.navigate(['/board', boardId]);
+    try {
+      const boardId = await this.retroService.createBoard(
+        this.boardName.trim()
+      );
+      this.router.navigate(['/board', boardId]);
+    } catch (e: any) {
+      this.createError = e.message || 'Failed to create board.';
+    }
   }
 
-  joinBoard(): void {
+  async joinBoard(): Promise<void> {
+    this.joinError = '';
     if (!this.joinCode.trim()) return;
-    this.router.navigate(['/board', this.joinCode.trim()]);
+    const slug = slugify(this.joinCode.trim());
+    if (!slug) {
+      this.joinError = 'Invalid board name.';
+      return;
+    }
+    const exists = await this.retroService.boardExists(slug);
+    if (!exists) {
+      this.joinError = 'Board not found.';
+      return;
+    }
+    this.router.navigate(['/board', slug]);
   }
 }
