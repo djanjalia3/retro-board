@@ -1,0 +1,91 @@
+<!-- Display Name Prompt -->
+@if (namePromptVisible) {
+<div style="position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5);">
+  <div style="width: 100%; max-width: 380px; background: white; border-radius: 12px; padding: 32px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+    <h2 style="font-size: 18px; font-weight: 600; color: #1f2937; margin-bottom: 16px;">Enter your display name</h2>
+    <input
+      type="text"
+      [(ngModel)]="displayName"
+      placeholder="Your name"
+      (keyup.enter)="setDisplayName()"
+      style="width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 16px; box-sizing: border-box;"
+    />
+    <button
+      (click)="setDisplayName()"
+      [disabled]="!displayName.trim()"
+      [style.opacity]="displayName.trim() ? '1' : '0.5'"
+      style="width: 100%; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;"
+    >
+      Join Board
+    </button>
+  </div>
+</div>
+}
+
+<!-- Board Content -->
+@if (board) {
+<div style="min-height: 100vh; background: #f3f4f6; padding: 16px;">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+    <h1 style="font-size: 24px; font-weight: 700; color: #1f2937; margin: 0;">{{ board.name }}</h1>
+    <div style="display: flex; align-items: center; gap: 16px; font-size: 13px; color: #6b7280;">
+      <span>Board ID: <code style="background: #e5e7eb; padding: 2px 8px; border-radius: 4px; font-size: 12px;">{{ boardId }}</code></span>
+      <span>Joined as: <strong>{{ displayName }}</strong></span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+    @for (column of board.columns; track column; let i = $index) {
+    <div style="background: white; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+      <h2 style="text-align: center; font-weight: 600; color: white; padding: 10px; border-radius: 8px; margin: 0 0 16px 0; font-size: 15px;"
+        [style.background]="columnColors[i]"
+      >
+        {{ column }}
+      </h2>
+
+      <!-- Add Card -->
+      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <input
+          type="text"
+          [(ngModel)]="newCardTexts[i]"
+          placeholder="Add a card..."
+          (keyup.enter)="addCard(i)"
+          style="flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; outline: none;"
+        />
+        <button
+          (click)="addCard(i)"
+          [disabled]="!newCardTexts[i]?.trim()"
+          [style.opacity]="newCardTexts[i]?.trim() ? '1' : '0.5'"
+          style="padding: 8px 14px; background: #374151; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;"
+        >
+          +
+        </button>
+      </div>
+
+      <!-- Cards -->
+      @for (card of getCardsForColumn(i); track card.id) {
+      <div style="border: 1px solid #e5e7eb; background: #f9fafb; border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #1f2937;">{{ card.text }}</p>
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #6b7280;">
+          <span>{{ card.author }}</span>
+          <button
+            (click)="vote(card.id, card.votes)"
+            style="display: flex; align-items: center; gap: 4px; background: white; border: 1px solid #e5e7eb; border-radius: 16px; padding: 4px 10px; cursor: pointer; font-size: 12px;"
+          >
+            <span>&#9650;</span>
+            <span>{{ card.votes }}</span>
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+    }
+  </div>
+</div>
+}
+
+<!-- Loading -->
+@if (!board && !namePromptVisible) {
+<div style="display: flex; min-height: 100vh; align-items: center; justify-content: center;">
+  <p style="color: #6b7280;">Loading board...</p>
+</div>
+}

@@ -1,0 +1,49 @@
+<div style="display: flex; min-height: 100vh; align-items: center; justify-content: center; background: #f3f4f6; padding: 16px;">
+  <div style="width: 100%; max-width: 420px; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    <h1 style="text-align: center; font-size: 28px; font-weight: 700; color: #1f2937; margin-bottom: 32px;">Retro Board</h1>
+
+    <div style="margin-bottom: 32px;">
+      <h2 style="font-size: 18px; font-weight: 600; color: #374151; margin-bottom: 12px;">Create a New Board</h2>
+      <div style="display: flex; gap: 8px;">
+        <input
+          type="text"
+          [(ngModel)]="boardName"
+          placeholder="Board name"
+          (keyup.enter)="createBoard()"
+          style="flex: 1; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none;"
+        />
+        <button
+          (click)="createBoard()"
+          [disabled]="!boardName.trim()"
+          style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; opacity: 1;"
+          [style.opacity]="boardName.trim() ? '1' : '0.5'"
+        >
+          Create
+        </button>
+      </div>
+    </div>
+
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin-bottom: 32px;" />
+
+    <div>
+      <h2 style="font-size: 18px; font-weight: 600; color: #374151; margin-bottom: 12px;">Join Existing Board</h2>
+      <div style="display: flex; gap: 8px;">
+        <input
+          type="text"
+          [(ngModel)]="joinCode"
+          placeholder="Board code"
+          (keyup.enter)="joinBoard()"
+          style="flex: 1; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none;"
+        />
+        <button
+          (click)="joinBoard()"
+          [disabled]="!joinCode.trim()"
+          style="padding: 10px 20px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;"
+          [style.opacity]="joinCode.trim() ? '1' : '0.5'"
+        >
+          Join
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
