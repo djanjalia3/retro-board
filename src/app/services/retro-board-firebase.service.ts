@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, NgZone } from '@angular/core';
 import {
   Database,
   ref,
@@ -14,6 +14,7 @@ import { RetroBoard, RetroCard } from '../models/retro-board.model';
 @Injectable({ providedIn: 'root' })
 export class RetroBoardFirebaseService {
   private db = inject(Database);
+  private ngZone = inject(NgZone);
 
   createBoard(name: string): Promise<string> {
     const boardsRef = ref(this.db, 'retro-boards');
@@ -39,10 +40,14 @@ export class RetroBoardFirebaseService {
       const unsubscribe = onValue(
         boardRef,
         (snapshot) => {
-          subscriber.next(snapshot.exists() ? snapshot.val() : null);
+          this.ngZone.run(() => {
+            subscriber.next(snapshot.exists() ? snapshot.val() : null);
+          });
         },
         (error) => {
-          subscriber.error(error);
+          this.ngZone.run(() => {
+            subscriber.error(error);
+          });
         }
       );
       return () => unsubscribe();

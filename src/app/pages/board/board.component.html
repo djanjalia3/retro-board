@@ -100,7 +100,12 @@
 
 <!-- Loading -->
 @if (!board && !namePromptVisible) {
-<div style="display: flex; min-height: 100vh; align-items: center; justify-content: center;">
-  <p style="color: #6b7280;">Loading board...</p>
+<div style="display: flex; min-height: 100vh; align-items: center; justify-content: center; flex-direction: column; gap: 8px;">
+  @if (loadError) {
+    <p style="color: #dc2626;">Error: {{ loadError }}</p>
+  } @else {
+    <p style="color: #6b7280;">Loading board...</p>
+  }
+  <p style="color: #9ca3af; font-size: 12px;">Board ID: {{ boardId }}</p>
 </div>
 }

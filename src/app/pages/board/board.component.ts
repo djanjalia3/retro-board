@@ -5,7 +5,6 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { RetroBoardFirebaseService } from '../../services/retro-board-firebase.service';
 import { RetroBoard } from '../../models/retro-board.model';
-import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-board',
@@ -25,6 +24,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   newCardTexts: string[] = ['', '', ''];
   postAnonymously: boolean[] = [false, false, false];
   sessionId = '';
+  loadError = '';
 
   readonly columnColors = ['#16a34a', '#dc2626', '#2563eb'];
 
@@ -41,8 +41,13 @@ export class BoardComponent implements OnInit, OnDestroy {
     if (this.boardId) {
       this.subscription = this.retroService
         .observeBoard(this.boardId)
-        .subscribe((board) => {
-          this.board = board;
+        .subscribe({
+          next: (board) => {
+            this.board = board;
+          },
+          error: (err) => {
+            this.loadError = err?.message || 'Failed to load board';
+          },
         });
     }
   }
@@ -98,8 +103,10 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.retroService.voteCard(this.boardId, cardId, this.sessionId);
   }
 
-  exportToExcel(): void {
+  async exportToExcel(): Promise<void> {
     if (!this.board) return;
+
+    const XLSX = await import('xlsx');
 
     const columns = this.board.columns;
     const rows: Record<string, string>[] = [];
