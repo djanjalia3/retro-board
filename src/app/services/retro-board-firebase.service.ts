@@ -49,21 +49,33 @@ export class RetroBoardFirebaseService {
     });
   }
 
-  addCard(boardId: string, card: Omit<RetroCard, 'votes'>): Promise<void> {
+  addCard(boardId: string, card: Omit<RetroCard, 'votes' | 'voters'>): Promise<void> {
     const cardsRef = ref(this.db, `retro-boards/${boardId}/cards`);
     const newCardRef = push(cardsRef);
     return set(newCardRef, { ...card, votes: 0 });
   }
 
-  voteCard(
+  async voteCard(
     boardId: string,
     cardId: string,
-    currentVotes: number
-  ): Promise<void> {
+    sessionId: string
+  ): Promise<boolean> {
     const cardRef = ref(
       this.db,
       `retro-boards/${boardId}/cards/${cardId}`
     );
-    return update(cardRef, { votes: currentVotes + 1 });
+    const snapshot = await get(cardRef);
+    if (!snapshot.exists()) return false;
+
+    const card = snapshot.val() as RetroCard;
+    if (card.voters && card.voters[sessionId]) {
+      return false; // Already voted
+    }
+
+    await update(cardRef, {
+      votes: (card.votes || 0) + 1,
+      [`voters/${sessionId}`]: true,
+    });
+    return true;
   }
 }

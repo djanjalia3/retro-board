@@ -4,6 +4,7 @@ export interface RetroCard {
   columnIndex: number;
   createdAt: number;
   votes: number;
+  voters?: { [sessionId: string]: boolean };
 }
 
 export interface RetroBoard {
