@@ -1,5 +1,5 @@
 import { Component, inject, ChangeDetectorRef } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -13,7 +13,7 @@ import {
 @Component({
   selector: 'app-board-list',
   standalone: true,
-  imports: [FormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatCardModule],
+  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatCardModule],
   templateUrl: './board-list.component.html',
 })
 export class BoardListComponent {
@@ -21,18 +21,17 @@ export class BoardListComponent {
   private retroService = inject(RetroBoardFirebaseService);
   private cdr = inject(ChangeDetectorRef);
 
-  boardName = '';
-  joinCode = '';
+  boardName = new FormControl('');
+  joinCode = new FormControl('');
   createError = '';
   joinError = '';
 
   async createBoard(): Promise<void> {
     this.createError = '';
-    if (!this.boardName.trim()) return;
+    const name = this.boardName.value?.trim();
+    if (!name) return;
     try {
-      const boardId = await this.retroService.createBoard(
-        this.boardName.trim()
-      );
+      const boardId = await this.retroService.createBoard(name);
       this.router.navigate(['/board', boardId]);
     } catch (e: any) {
       this.createError = e.message || 'Failed to create board.';
@@ -42,8 +41,9 @@ export class BoardListComponent {
 
   async joinBoard(): Promise<void> {
     this.joinError = '';
-    if (!this.joinCode.trim()) return;
-    const slug = slugify(this.joinCode.trim());
+    const code = this.joinCode.value?.trim();
+    if (!code) return;
+    const slug = slugify(code);
     if (!slug) {
       this.joinError = 'Invalid board name.';
       return;

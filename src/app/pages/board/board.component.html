@@ -6,14 +6,14 @@
       <h2 class="text-lg font-semibold text-gray-800 mb-4">Enter your display name</h2>
       <mat-form-field class="w-full" appearance="outline">
         <mat-label>Your name</mat-label>
-        <input matInput [(ngModel)]="displayName" (keyup.enter)="setDisplayName()" />
+        <input matInput [formControl]="displayNameControl" (keyup.enter)="setDisplayName()" />
       </mat-form-field>
       <button
         mat-raised-button
         color="primary"
         class="w-full"
         (click)="setDisplayName()"
-        [disabled]="!displayName.trim()"
+        [disabled]="!displayNameControl.value?.trim()"
       >
         Join Board
       </button>
@@ -56,19 +56,19 @@
           <div class="flex gap-2 items-start">
             <mat-form-field class="flex-1" appearance="outline" subscriptSizing="dynamic">
               <mat-label>Add a card...</mat-label>
-              <input matInput [(ngModel)]="newCardTexts[i]" (keyup.enter)="addCard(i)" />
+              <input matInput [formControl]="newCardTexts.at(i)" (keyup.enter)="addCard(i)" />
             </mat-form-field>
             <button
               mat-mini-fab
               color="primary"
               (click)="addCard(i)"
-              [disabled]="!newCardTexts[i]?.trim()"
+              [disabled]="!newCardTexts.at(i).value?.trim()"
               class="mt-1"
             >
               <mat-icon>add</mat-icon>
             </button>
           </div>
-          <mat-checkbox [(ngModel)]="postAnonymously[i]" class="text-xs text-gray-500">
+          <mat-checkbox [formControl]="postAnonymously.at(i)" class="text-xs text-gray-500">
             Post anonymously
           </mat-checkbox>
         </div>

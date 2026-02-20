@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormArray, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,7 +17,7 @@ import { RetroBoard } from '../../models/retro-board.model';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
+    ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
@@ -34,12 +34,23 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   board: RetroBoard | null = null;
   boardId = '';
+  displayNameControl = new FormControl('');
   displayName = '';
   namePromptVisible = true;
-  newCardTexts: string[] = ['', '', ''];
-  postAnonymously: boolean[] = [false, false, false];
   sessionId = '';
   loadError = '';
+
+  newCardTexts = new FormArray([
+    new FormControl(''),
+    new FormControl(''),
+    new FormControl(''),
+  ]);
+
+  postAnonymously = new FormArray([
+    new FormControl(false),
+    new FormControl(false),
+    new FormControl(false),
+  ]);
 
   readonly columnColors = ['bg-green-600', 'bg-red-600', 'bg-blue-600'];
 
@@ -49,6 +60,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     const stored = sessionStorage.getItem('retro-display-name');
     if (stored) {
       this.displayName = stored;
+      this.displayNameControl.setValue(stored);
       this.namePromptVisible = false;
     }
 
@@ -81,8 +93,10 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   setDisplayName(): void {
-    if (!this.displayName.trim()) return;
-    sessionStorage.setItem('retro-display-name', this.displayName.trim());
+    const name = this.displayNameControl.value?.trim();
+    if (!name) return;
+    this.displayName = name;
+    sessionStorage.setItem('retro-display-name', name);
     this.namePromptVisible = false;
   }
 
@@ -102,16 +116,18 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   async addCard(columnIndex: number): Promise<void> {
-    const text = this.newCardTexts[columnIndex];
-    if (!text?.trim()) return;
-    const author = this.postAnonymously[columnIndex] ? 'Anonymous' : this.displayName;
+    const control = this.newCardTexts.at(columnIndex);
+    const text = control.value?.trim();
+    if (!text) return;
+    const isAnonymous = this.postAnonymously.at(columnIndex).value;
+    const author = isAnonymous ? 'Anonymous' : this.displayName;
     await this.retroService.addCard(this.boardId, {
-      text: text.trim(),
+      text,
       author,
       columnIndex,
       createdAt: Date.now(),
     });
-    this.newCardTexts[columnIndex] = '';
+    control.reset('');
   }
 
   vote(cardId: string): void {

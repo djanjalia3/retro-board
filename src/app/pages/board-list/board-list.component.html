@@ -9,13 +9,13 @@
         <div class="flex gap-2 items-start">
           <mat-form-field class="flex-1" appearance="outline">
             <mat-label>Board name</mat-label>
-            <input matInput [(ngModel)]="boardName" (keyup.enter)="createBoard()" />
+            <input matInput [formControl]="boardName" (keyup.enter)="createBoard()" />
           </mat-form-field>
           <button
             mat-raised-button
             color="primary"
             (click)="createBoard()"
-            [disabled]="!boardName.trim()"
+            [disabled]="!boardName.value?.trim()"
             class="mt-1 h-14"
           >
             Create
@@ -34,13 +34,13 @@
         <div class="flex gap-2 items-start">
           <mat-form-field class="flex-1" appearance="outline">
             <mat-label>Board name</mat-label>
-            <input matInput [(ngModel)]="joinCode" (keyup.enter)="joinBoard()" />
+            <input matInput [formControl]="joinCode" (keyup.enter)="joinBoard()" />
           </mat-form-field>
           <button
             mat-raised-button
             class="mt-1 h-14 !bg-green-600 !text-white"
             (click)="joinBoard()"
-            [disabled]="!joinCode.trim()"
+            [disabled]="!joinCode.value?.trim()"
           >
             Join
           </button>
