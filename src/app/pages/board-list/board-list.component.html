@@ -1,55 +1,54 @@
-<div style="display: flex; min-height: 100vh; align-items: center; justify-content: center; background: #f3f4f6; padding: 16px;">
-  <div style="width: 100%; max-width: 420px; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-    <h1 style="text-align: center; font-size: 28px; font-weight: 700; color: #1f2937; margin-bottom: 32px;">Retro Board</h1>
+<div class="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+  <mat-card class="w-full max-w-md">
+    <mat-card-content class="p-10">
+      <h1 class="text-center text-3xl font-bold text-gray-800 mb-8">Retro Board</h1>
 
-    <div style="margin-bottom: 32px;">
-      <h2 style="font-size: 18px; font-weight: 600; color: #374151; margin-bottom: 12px;">Create a New Board</h2>
-      <div style="display: flex; gap: 8px;">
-        <input
-          type="text"
-          [(ngModel)]="boardName"
-          placeholder="Board name"
-          (keyup.enter)="createBoard()"
-          style="flex: 1; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none;"
-        />
-        <button
-          (click)="createBoard()"
-          [disabled]="!boardName.trim()"
-          style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; opacity: 1;"
-          [style.opacity]="boardName.trim() ? '1' : '0.5'"
-        >
-          Create
-        </button>
+      <!-- Create Board -->
+      <div class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-700 mb-3">Create a New Board</h2>
+        <div class="flex gap-2 items-start">
+          <mat-form-field class="flex-1" appearance="outline">
+            <mat-label>Board name</mat-label>
+            <input matInput [(ngModel)]="boardName" (keyup.enter)="createBoard()" />
+          </mat-form-field>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="createBoard()"
+            [disabled]="!boardName.trim()"
+            class="mt-1 h-14"
+          >
+            Create
+          </button>
+        </div>
+        @if (createError) {
+          <p class="text-red-600 text-sm -mt-3">{{ createError }}</p>
+        }
       </div>
-      @if (createError) {
-        <p style="color: #dc2626; font-size: 13px; margin-top: 8px;">{{ createError }}</p>
-      }
-    </div>
 
-    <hr style="border: none; border-top: 1px solid #e5e7eb; margin-bottom: 32px;" />
+      <hr class="border-gray-200 mb-8" />
 
-    <div>
-      <h2 style="font-size: 18px; font-weight: 600; color: #374151; margin-bottom: 12px;">Join Existing Board</h2>
-      <div style="display: flex; gap: 8px;">
-        <input
-          type="text"
-          [(ngModel)]="joinCode"
-          placeholder="Board name"
-          (keyup.enter)="joinBoard()"
-          style="flex: 1; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; outline: none;"
-        />
-        <button
-          (click)="joinBoard()"
-          [disabled]="!joinCode.trim()"
-          style="padding: 10px 20px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;"
-          [style.opacity]="joinCode.trim() ? '1' : '0.5'"
-        >
-          Join
-        </button>
+      <!-- Join Board -->
+      <div>
+        <h2 class="text-lg font-semibold text-gray-700 mb-3">Join Existing Board</h2>
+        <div class="flex gap-2 items-start">
+          <mat-form-field class="flex-1" appearance="outline">
+            <mat-label>Board name</mat-label>
+            <input matInput [(ngModel)]="joinCode" (keyup.enter)="joinBoard()" />
+          </mat-form-field>
+          <button
+            mat-raised-button
+            class="mt-1 h-14 !bg-green-600 !text-white"
+            (click)="joinBoard()"
+            [disabled]="!joinCode.trim()"
+          >
+            Join
+          </button>
+        </div>
+        @if (joinError) {
+          <p class="text-red-600 text-sm -mt-3">{{ joinError }}</p>
+        }
       </div>
-      @if (joinError) {
-        <p style="color: #dc2626; font-size: 13px; margin-top: 8px;">{{ joinError }}</p>
-      }
-    </div>
-  </div>
+    </mat-card-content>
+  </mat-card>
 </div>

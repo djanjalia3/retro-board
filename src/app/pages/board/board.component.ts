@@ -3,13 +3,28 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatIconModule } from '@angular/material/icon';
 import { RetroBoardFirebaseService } from '../../services/retro-board-firebase.service';
 import { RetroBoard } from '../../models/retro-board.model';
 
 @Component({
   selector: 'app-board',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatIconModule,
+  ],
   templateUrl: './board.component.html',
 })
 export class BoardComponent implements OnInit, OnDestroy {
@@ -26,7 +41,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   sessionId = '';
   loadError = '';
 
-  readonly columnColors = ['#16a34a', '#dc2626', '#2563eb'];
+  readonly columnColors = ['bg-green-600', 'bg-red-600', 'bg-blue-600'];
 
   ngOnInit(): void {
     this.sessionId = this.getOrCreateSessionId();
