@@ -66,7 +66,7 @@ export class RetroBoardFirebaseService {
     const board: RetroBoard = {
       name,
       createdAt: Date.now(),
-      columns: ['What went well', "What didn't go well", 'Action items'],
+      columns: ['What went well', "What didn't go well", 'Shoutouts', 'Action items'],
     };
     await restPut(`retro-boards/${slug}`, board);
     return slug;

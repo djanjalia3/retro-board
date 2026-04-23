@@ -57,7 +57,7 @@
   }
 
   <!-- Columns Grid -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
     @for (column of b.columns; track column; let i = $index) {
     <mat-card class="!border-t-4" [ngClass]="columnAccents[i]">
       <mat-card-content class="p-4">

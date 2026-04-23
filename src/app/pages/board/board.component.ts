@@ -46,19 +46,15 @@ export class BoardComponent implements OnInit, OnDestroy {
   sessionId = '';
   loadError = signal('');
 
-  newCardTexts = new FormArray([
-    new FormControl(''),
-    new FormControl(''),
-    new FormControl(''),
-  ]);
+  newCardTexts = new FormArray<FormControl<string | null>>([]);
+  postAnonymously = new FormArray<FormControl<boolean | null>>([]);
 
-  postAnonymously = new FormArray([
-    new FormControl(false),
-    new FormControl(false),
-    new FormControl(false),
-  ]);
-
-  readonly columnAccents = ['!border-t-emerald-500', '!border-t-rose-500', '!border-t-sky-500'];
+  readonly columnAccents = [
+    '!border-t-emerald-500',
+    '!border-t-rose-500',
+    '!border-t-amber-500',
+    '!border-t-sky-500',
+  ];
 
   readonly participants = computed(() => {
     const map = this.presence();
@@ -91,6 +87,11 @@ export class BoardComponent implements OnInit, OnDestroy {
         .observeBoard(this.boardId)
         .subscribe({
           next: (board) => {
+            const cols = board?.columns?.length ?? 0;
+            while (this.newCardTexts.length < cols) {
+              this.newCardTexts.push(new FormControl(''));
+              this.postAnonymously.push(new FormControl(false));
+            }
             this.board.set(board);
           },
           error: (err) => {
