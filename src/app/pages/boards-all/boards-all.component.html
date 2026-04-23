@@ -1,0 +1,51 @@
+<div class="min-h-screen bg-gray-100 p-4">
+  <div class="max-w-3xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800">All Boards</h1>
+        <p class="text-sm text-gray-500 mt-1">Pick one to join.</p>
+      </div>
+      <a mat-stroked-button routerLink="/">
+        <mat-icon class="mr-1">arrow_back</mat-icon>
+        Back
+      </a>
+    </div>
+
+    @if (error()) {
+      <mat-card>
+        <mat-card-content class="p-6">
+          <p class="text-red-600 text-sm">{{ error() }}</p>
+        </mat-card-content>
+      </mat-card>
+    } @else if (boards() === null) {
+      <p class="text-gray-500 text-sm">Loading…</p>
+    } @else if (boards()!.length === 0) {
+      <mat-card>
+        <mat-card-content class="p-6 text-center text-gray-500 text-sm">
+          No boards yet. <a routerLink="/" class="text-blue-600 underline">Create one</a>.
+        </mat-card-content>
+      </mat-card>
+    } @else {
+      <div class="flex flex-col gap-2">
+        @for (b of boards(); track b.id) {
+          <a
+            [routerLink]="['/board', b.id]"
+            class="block bg-white border border-gray-200 rounded-lg px-4 py-3 hover:border-gray-400 hover:shadow-sm transition"
+          >
+            <div class="flex items-center justify-between">
+              <div class="min-w-0">
+                <div class="font-medium text-gray-800 truncate">{{ b.name }}</div>
+                <div class="text-xs text-gray-500 mt-0.5 font-mono truncate">{{ b.id }}</div>
+              </div>
+              <div class="text-xs text-gray-400 ml-4 whitespace-nowrap">
+                @if (b.createdAt) {
+                  {{ b.createdAt | date: 'MMM d, y' }}
+                }
+              </div>
+            </div>
+          </a>
+        }
+      </div>
+    }
+  </div>
+</div>

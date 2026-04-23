@@ -85,6 +85,18 @@ export class RetroBoardFirebaseService {
     return streamObservable<RetroBoard>(`retro-boards/${boardId}`);
   }
 
+  async listBoards(): Promise<{ id: string; name: string; createdAt: number }[]> {
+    const all = await restGet<Record<string, RetroBoard>>('retro-boards');
+    if (!all) return [];
+    return Object.entries(all)
+      .map(([id, b]) => ({
+        id,
+        name: b?.name ?? id,
+        createdAt: b?.createdAt ?? 0,
+      }))
+      .sort((a, b) => b.createdAt - a.createdAt);
+  }
+
   async addCard(
     boardId: string,
     card: Omit<RetroCard, 'votes' | 'voters'>

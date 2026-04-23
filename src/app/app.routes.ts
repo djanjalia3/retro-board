@@ -9,6 +9,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'boards',
+    loadComponent: () =>
+      import('./pages/boards-all/boards-all.component').then(
+        (m) => m.BoardsAllComponent
+      ),
+  },
+  {
     path: 'board/:id',
     loadComponent: () =>
       import('./pages/board/board.component').then((m) => m.BoardComponent),
