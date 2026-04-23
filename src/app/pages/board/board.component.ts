@@ -10,7 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { RetroBoardFirebaseService } from '../../services/retro-board-firebase.service';
+import { RetroBoardFirebaseService, participantKey } from '../../services/retro-board-firebase.service';
 import { RetroBoard, RetroParticipant } from '../../models/retro-board.model';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 
@@ -107,13 +107,30 @@ export class BoardComponent implements OnInit, OnDestroy {
       if (this.displayName()) {
         this.joinPresence();
       }
+      window.addEventListener('beforeunload', this.onBeforeUnload);
     }
   }
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
     this.presenceSubscription?.unsubscribe();
+    const name = this.displayName();
+    if (this.boardId && name) {
+      this.retroService.leavePresence(this.boardId, this.sessionId, name);
+    }
+    window.removeEventListener('beforeunload', this.onBeforeUnload);
   }
+
+  private onBeforeUnload = (): void => {
+    const name = this.displayName();
+    if (!this.boardId || !name) return;
+    const url = `https://retro-board-75e44-default-rtdb.firebaseio.com/presence/${this.boardId}/${participantKey(name)}/connections/${this.sessionId}.json`;
+    try {
+      fetch(url, { method: 'DELETE', keepalive: true });
+    } catch {
+      // best-effort
+    }
+  };
 
   private getOrCreateSessionId(): string {
     let id = sessionStorage.getItem('retro-session-id');

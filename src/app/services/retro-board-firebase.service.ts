@@ -7,13 +7,11 @@ import {
   get,
   update,
   remove,
-  onDisconnect,
   onValue,
-  enableLogging,
 } from 'firebase/database';
-
-enableLogging(true);
 import { Observable } from 'rxjs';
+
+const RTDB_REST_BASE = 'https://retro-board-75e44-default-rtdb.firebaseio.com';
 import { RetroBoard, RetroCard, RetroParticipant } from '../models/retro-board.model';
 
 export function slugify(name: string): string {
@@ -65,23 +63,14 @@ export class RetroBoardFirebaseService {
   }
 
   observeBoard(boardId: string): Observable<RetroBoard | null> {
-    console.log('[retro-debug] observeBoard subscribing:', boardId);
     return new Observable((subscriber) => {
       const boardRef = ref(this.db, `retro-boards/${boardId}`);
       const unsubscribe = onValue(
         boardRef,
         (snapshot) => {
-          try {
-            const val = snapshot.exists() ? snapshot.val() : null;
-            console.log('[retro-debug] observeBoard onValue fired, keys:', val ? Object.keys(val) : 'null');
-            subscriber.next(val);
-          } catch (e) {
-            console.error('[retro-debug] observeBoard val() threw:', e);
-            subscriber.error(e);
-          }
+          subscriber.next(snapshot.exists() ? snapshot.val() : null);
         },
         (error) => {
-          console.error('[retro-debug] observeBoard error cb:', error);
           subscriber.error(error);
         }
       );
@@ -100,27 +89,24 @@ export class RetroBoardFirebaseService {
   }
 
   observePresence(boardId: string): Observable<Record<string, RetroParticipant> | null> {
-    console.log('[retro-debug] observePresence subscribing:', boardId);
     return new Observable((subscriber) => {
-      const presenceRef = ref(this.db, `presence/${boardId}`);
-      const unsubscribe = onValue(
-        presenceRef,
-        (snapshot) => {
-          try {
-            const val = snapshot.exists() ? snapshot.val() : null;
-            console.log('[retro-debug] observePresence onValue fired, keys:', val ? Object.keys(val) : 'null');
-            subscriber.next(val);
-          } catch (e) {
-            console.error('[retro-debug] observePresence val() threw:', e);
-            subscriber.error(e);
-          }
-        },
-        (error) => {
-          console.error('[retro-debug] observePresence error cb:', error);
-          subscriber.error(error);
+      let cancelled = false;
+      const poll = async () => {
+        try {
+          const res = await fetch(`${RTDB_REST_BASE}/presence/${boardId}.json`);
+          if (cancelled) return;
+          const data = (await res.json()) as Record<string, RetroParticipant> | null;
+          if (!cancelled) subscriber.next(data);
+        } catch {
+          // swallow transient errors; next tick retries
         }
-      );
-      return () => unsubscribe();
+      };
+      poll();
+      const interval = setInterval(poll, 3000);
+      return () => {
+        cancelled = true;
+        clearInterval(interval);
+      };
     });
   }
 
@@ -129,38 +115,45 @@ export class RetroBoardFirebaseService {
     sessionId: string,
     displayName: string
   ): Promise<void> {
-    console.log('[retro-debug] joinPresence start:', { boardId, sessionId, displayName });
     try {
       const key = participantKey(displayName);
-      const base = `presence/${boardId}/${key}`;
-      const participantRef = ref(this.db, base);
-      const connectionRef = ref(this.db, `${base}/connections/${sessionId}`);
-      const joinedAtRef = ref(this.db, `${base}/joinedAt`);
+      const base = `${RTDB_REST_BASE}/presence/${boardId}/${key}`;
 
-      console.log('[retro-debug] joinPresence: registering onDisconnect');
-      onDisconnect(connectionRef).remove();
-
-      console.log('[retro-debug] joinPresence: updating participant meta');
-      await update(participantRef, {
-        displayName,
-        lastSeen: Date.now(),
+      await fetch(`${base}.json`, {
+        method: 'PATCH',
+        body: JSON.stringify({ displayName, lastSeen: Date.now() }),
       });
-      console.log('[retro-debug] joinPresence: setting connection true');
-      await set(connectionRef, true);
+      await fetch(`${base}/connections/${sessionId}.json`, {
+        method: 'PUT',
+        body: JSON.stringify(true),
+      });
 
-      try {
-        console.log('[retro-debug] joinPresence: checking joinedAt');
-        const snap = await get(joinedAtRef);
-        if (!snap.exists()) {
-          console.log('[retro-debug] joinPresence: setting joinedAt');
-          await set(joinedAtRef, Date.now());
-        }
-      } catch (e) {
-        console.warn('[retro-debug] joinPresence: joinedAt step failed:', e);
+      const joinedAtRes = await fetch(`${base}/joinedAt.json`);
+      const existing = await joinedAtRes.json();
+      if (existing === null) {
+        await fetch(`${base}/joinedAt.json`, {
+          method: 'PUT',
+          body: JSON.stringify(Date.now()),
+        });
       }
-      console.log('[retro-debug] joinPresence complete');
     } catch (e) {
-      console.warn('[retro-debug] joinPresence outer failed:', e);
+      console.warn('[retro] joinPresence failed:', e);
+    }
+  }
+
+  async leavePresence(
+    boardId: string,
+    sessionId: string,
+    displayName: string
+  ): Promise<void> {
+    try {
+      const key = participantKey(displayName);
+      await fetch(
+        `${RTDB_REST_BASE}/presence/${boardId}/${key}/connections/${sessionId}.json`,
+        { method: 'DELETE' }
+      );
+    } catch {
+      // best-effort
     }
   }
 
