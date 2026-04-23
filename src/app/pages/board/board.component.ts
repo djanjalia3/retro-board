@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormArray, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -32,13 +32,13 @@ export class BoardComponent implements OnInit, OnDestroy {
   private retroService = inject(RetroBoardFirebaseService);
   private subscription?: Subscription;
 
-  board: RetroBoard | null = null;
+  board = signal<RetroBoard | null>(null);
   boardId = '';
   displayNameControl = new FormControl('');
-  displayName = '';
-  namePromptVisible = true;
+  displayName = signal('');
+  namePromptVisible = signal(true);
   sessionId = '';
-  loadError = '';
+  loadError = signal('');
 
   newCardTexts = new FormArray([
     new FormControl(''),
@@ -59,9 +59,9 @@ export class BoardComponent implements OnInit, OnDestroy {
 
     const stored = sessionStorage.getItem('retro-display-name');
     if (stored) {
-      this.displayName = stored;
+      this.displayName.set(stored);
       this.displayNameControl.setValue(stored);
-      this.namePromptVisible = false;
+      this.namePromptVisible.set(false);
     }
 
     this.boardId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -70,10 +70,10 @@ export class BoardComponent implements OnInit, OnDestroy {
         .observeBoard(this.boardId)
         .subscribe({
           next: (board) => {
-            this.board = board;
+            this.board.set(board);
           },
           error: (err) => {
-            this.loadError = err?.message || 'Failed to load board';
+            this.loadError.set(err?.message || 'Failed to load board');
           },
         });
     }
@@ -95,16 +95,17 @@ export class BoardComponent implements OnInit, OnDestroy {
   setDisplayName(): void {
     const name = this.displayNameControl.value?.trim();
     if (!name) return;
-    this.displayName = name;
+    this.displayName.set(name);
     sessionStorage.setItem('retro-display-name', name);
-    this.namePromptVisible = false;
+    this.namePromptVisible.set(false);
   }
 
   getCardsForColumn(
     columnIndex: number
   ): { id: string; text: string; author: string; votes: number; hasVoted: boolean }[] {
-    if (!this.board?.cards) return [];
-    return Object.entries(this.board.cards)
+    const board = this.board();
+    if (!board?.cards) return [];
+    return Object.entries(board.cards)
       .filter(([, card]) => card.columnIndex === columnIndex)
       .map(([id, card]) => ({
         id,
@@ -120,7 +121,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     const text = control.value?.trim();
     if (!text) return;
     const isAnonymous = this.postAnonymously.at(columnIndex).value;
-    const author = isAnonymous ? 'Anonymous' : this.displayName;
+    const author = isAnonymous ? 'Anonymous' : this.displayName();
     await this.retroService.addCard(this.boardId, {
       text,
       author,
@@ -135,17 +136,18 @@ export class BoardComponent implements OnInit, OnDestroy {
   }
 
   async exportToExcel(): Promise<void> {
-    if (!this.board) return;
+    const board = this.board();
+    if (!board) return;
 
     const XLSX = await import('xlsx');
 
-    const columns = this.board.columns;
+    const columns = board.columns;
     const rows: Record<string, string>[] = [];
 
     const cardsByColumn: string[][][] = columns.map(() => [] as string[][]);
 
-    if (this.board.cards) {
-      for (const [, card] of Object.entries(this.board.cards)) {
+    if (board.cards) {
+      for (const [, card] of Object.entries(board.cards)) {
         cardsByColumn[card.columnIndex].push([
           card.text,
           card.author,
@@ -170,6 +172,6 @@ export class BoardComponent implements OnInit, OnDestroy {
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Retro Board');
-    XLSX.writeFile(wb, `${this.board.name.replace(/[^a-zA-Z0-9]/g, '_')}_retro.xlsx`);
+    XLSX.writeFile(wb, `${board.name.replace(/[^a-zA-Z0-9]/g, '_')}_retro.xlsx`);
   }
 }

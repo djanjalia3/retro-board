@@ -1,4 +1,4 @@
-import { inject, Injectable, NgZone } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   Database,
   ref,
@@ -24,7 +24,6 @@ export function slugify(name: string): string {
 @Injectable({ providedIn: 'root' })
 export class RetroBoardFirebaseService {
   private db = inject(Database);
-  private ngZone = inject(NgZone);
 
   async createBoard(name: string): Promise<string> {
     const slug = slugify(name);
@@ -58,28 +57,13 @@ export class RetroBoardFirebaseService {
   observeBoard(boardId: string): Observable<RetroBoard | null> {
     return new Observable((subscriber) => {
       const boardRef = ref(this.db, `retro-boards/${boardId}`);
-
-      // Initial fetch to ensure data loads on refresh
-      get(boardRef).then((snapshot) => {
-        this.ngZone.run(() => {
-          subscriber.next(snapshot.exists() ? snapshot.val() : null);
-        });
-      }).catch((err) => {
-        this.ngZone.run(() => subscriber.error(err));
-      });
-
-      // Realtime updates for live changes
       const unsubscribe = onValue(
         boardRef,
         (snapshot) => {
-          this.ngZone.run(() => {
-            subscriber.next(snapshot.exists() ? snapshot.val() : null);
-          });
+          subscriber.next(snapshot.exists() ? snapshot.val() : null);
         },
         (error) => {
-          this.ngZone.run(() => {
-            subscriber.error(error);
-          });
+          subscriber.error(error);
         }
       );
       return () => unsubscribe();

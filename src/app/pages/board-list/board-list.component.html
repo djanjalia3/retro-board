@@ -21,8 +21,8 @@
             Create
           </button>
         </div>
-        @if (createError) {
-          <p class="text-red-600 text-sm -mt-3">{{ createError }}</p>
+        @if (createError()) {
+          <p class="text-red-600 text-sm -mt-3">{{ createError() }}</p>
         }
       </div>
 
@@ -45,8 +45,8 @@
             Join
           </button>
         </div>
-        @if (joinError) {
-          <p class="text-red-600 text-sm -mt-3">{{ joinError }}</p>
+        @if (joinError()) {
+          <p class="text-red-600 text-sm -mt-3">{{ joinError() }}</p>
         }
       </div>
     </mat-card-content>

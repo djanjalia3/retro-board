@@ -1,5 +1,5 @@
 <!-- Display Name Prompt -->
-@if (namePromptVisible) {
+@if (namePromptVisible()) {
 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
   <mat-card class="w-full max-w-sm">
     <mat-card-content class="p-8">
@@ -23,14 +23,14 @@
 }
 
 <!-- Board Content -->
-@if (board) {
+@if (board(); as b) {
 <div class="min-h-screen bg-gray-100 p-4">
   <!-- Header -->
   <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-    <h1 class="text-2xl font-bold text-gray-800">{{ board.name }}</h1>
+    <h1 class="text-2xl font-bold text-gray-800">{{ b.name }}</h1>
     <div class="flex items-center gap-4 text-sm text-gray-500">
       <span>Board ID: <code class="bg-gray-200 px-2 py-0.5 rounded text-xs">{{ boardId }}</code></span>
-      <span>Joined as: <strong>{{ displayName }}</strong></span>
+      <span>Joined as: <strong>{{ displayName() }}</strong></span>
       <button mat-raised-button class="!bg-emerald-600 !text-white" (click)="exportToExcel()">
         <mat-icon class="mr-1">download</mat-icon>
         Export Excel
@@ -40,7 +40,7 @@
 
   <!-- Columns Grid -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    @for (column of board.columns; track column; let i = $index) {
+    @for (column of b.columns; track column; let i = $index) {
     <mat-card>
       <mat-card-content class="p-4">
         <!-- Column Header -->
@@ -99,10 +99,10 @@
 }
 
 <!-- Loading -->
-@if (!board && !namePromptVisible) {
+@if (!board() && !namePromptVisible()) {
 <div class="flex min-h-screen items-center justify-center flex-col gap-2">
-  @if (loadError) {
-    <p class="text-red-600">Error: {{ loadError }}</p>
+  @if (loadError()) {
+    <p class="text-red-600">Error: {{ loadError() }}</p>
   } @else {
     <p class="text-gray-500">Loading board...</p>
   }

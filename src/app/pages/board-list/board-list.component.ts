@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -19,39 +19,36 @@ import {
 export class BoardListComponent {
   private router = inject(Router);
   private retroService = inject(RetroBoardFirebaseService);
-  private cdr = inject(ChangeDetectorRef);
 
   boardName = new FormControl('');
   joinCode = new FormControl('');
-  createError = '';
-  joinError = '';
+  createError = signal('');
+  joinError = signal('');
 
   async createBoard(): Promise<void> {
-    this.createError = '';
+    this.createError.set('');
     const name = this.boardName.value?.trim();
     if (!name) return;
     try {
       const boardId = await this.retroService.createBoard(name);
       this.router.navigate(['/board', boardId]);
     } catch (e: any) {
-      this.createError = e.message || 'Failed to create board.';
-      this.cdr.detectChanges();
+      this.createError.set(e.message || 'Failed to create board.');
     }
   }
 
   async joinBoard(): Promise<void> {
-    this.joinError = '';
+    this.joinError.set('');
     const code = this.joinCode.value?.trim();
     if (!code) return;
     const slug = slugify(code);
     if (!slug) {
-      this.joinError = 'Invalid board name.';
+      this.joinError.set('Invalid board name.');
       return;
     }
     const exists = await this.retroService.boardExists(slug);
     if (!exists) {
-      this.joinError = 'Board not found.';
-      this.cdr.detectChanges();
+      this.joinError.set('Board not found.');
       return;
     }
     this.router.navigate(['/board', slug]);
