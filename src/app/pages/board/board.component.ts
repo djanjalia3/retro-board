@@ -9,8 +9,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RetroBoardFirebaseService } from '../../services/retro-board-firebase.service';
 import { RetroBoard } from '../../models/retro-board.model';
+import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-board',
@@ -24,12 +26,14 @@ import { RetroBoard } from '../../models/retro-board.model';
     MatCardModule,
     MatCheckboxModule,
     MatIconModule,
+    MatDialogModule,
   ],
   templateUrl: './board.component.html',
 })
 export class BoardComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private retroService = inject(RetroBoardFirebaseService);
+  private dialog = inject(MatDialog);
   private subscription?: Subscription;
 
   board = signal<RetroBoard | null>(null);
@@ -133,6 +137,22 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   vote(cardId: string): void {
     this.retroService.voteCard(this.boardId, cardId, this.sessionId);
+  }
+
+  removeCard(cardId: string): void {
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Delete card?',
+        message: 'This will permanently remove the card for everyone.',
+        confirmText: 'Delete',
+      },
+      width: '360px',
+    });
+    ref.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.retroService.deleteCard(this.boardId, cardId);
+      }
+    });
   }
 
   async exportToExcel(): Promise<void> {

@@ -7,7 +7,7 @@ import {
   get,
   update,
 } from '@angular/fire/database';
-import { onValue } from 'firebase/database';
+import { onValue, remove } from 'firebase/database';
 import { Observable } from 'rxjs';
 import { RetroBoard, RetroCard } from '../models/retro-board.model';
 
@@ -74,6 +74,10 @@ export class RetroBoardFirebaseService {
     const cardsRef = ref(this.db, `retro-boards/${boardId}/cards`);
     const newCardRef = push(cardsRef);
     return set(newCardRef, { ...card, votes: 0 });
+  }
+
+  deleteCard(boardId: string, cardId: string): Promise<void> {
+    return remove(ref(this.db, `retro-boards/${boardId}/cards/${cardId}`));
   }
 
   async voteCard(
