@@ -82,7 +82,7 @@ export class RetroBoardFirebaseService {
   }
 
   observeBoard(boardId: string): Observable<RetroBoard | null> {
-    return this.pollObservable(`retro-boards/${boardId}`, 1500);
+    return streamObservable<RetroBoard>(`retro-boards/${boardId}`);
   }
 
   async addCard(
@@ -116,7 +116,7 @@ export class RetroBoardFirebaseService {
   observePresence(
     boardId: string
   ): Observable<Record<string, RetroParticipant> | null> {
-    return this.pollObservable(`presence/${boardId}`, 3000);
+    return streamObservable<Record<string, RetroParticipant>>(`presence/${boardId}`);
   }
 
   async joinPresence(
@@ -151,23 +151,80 @@ export class RetroBoardFirebaseService {
     }
   }
 
-  private pollObservable<T>(path: string, intervalMs: number): Observable<T | null> {
-    return new Observable((subscriber) => {
-      let cancelled = false;
-      const tick = async () => {
-        try {
-          const data = await restGet<T>(path);
-          if (!cancelled) subscriber.next(data);
-        } catch {
-          // transient; next tick retries
-        }
-      };
-      tick();
-      const interval = setInterval(tick, intervalMs);
-      return () => {
-        cancelled = true;
-        clearInterval(interval);
-      };
-    });
+}
+
+function applyPut(tree: unknown, path: string, data: unknown): unknown {
+  if (path === '/' || path === '') return data;
+  const parts = path.split('/').filter(Boolean);
+  const root: Record<string, unknown> =
+    tree && typeof tree === 'object' ? { ...(tree as Record<string, unknown>) } : {};
+  let cursor: Record<string, unknown> = root;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const seg = parts[i];
+    const child = cursor[seg];
+    cursor[seg] = child && typeof child === 'object' ? { ...(child as Record<string, unknown>) } : {};
+    cursor = cursor[seg] as Record<string, unknown>;
   }
+  const leaf = parts[parts.length - 1];
+  if (data === null || data === undefined) {
+    delete cursor[leaf];
+  } else {
+    cursor[leaf] = data;
+  }
+  return Object.keys(root).length === 0 ? null : root;
+}
+
+function applyPatch(tree: unknown, path: string, data: unknown): unknown {
+  if (!data || typeof data !== 'object') return tree;
+  let result = tree;
+  for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+    const childPath = path === '/' || path === '' ? `/${key}` : `${path}/${key}`;
+    result = applyPut(result, childPath, value);
+  }
+  return result;
+}
+
+function streamObservable<T>(path: string): Observable<T | null> {
+  return new Observable((subscriber) => {
+    let current: unknown = null;
+    let closed = false;
+    const es = new EventSource(`${RTDB_REST_BASE}/${path}.json`);
+
+    const emit = () => {
+      if (!closed) subscriber.next(current as T | null);
+    };
+
+    es.addEventListener('put', (e: MessageEvent) => {
+      try {
+        const { path: p, data } = JSON.parse(e.data);
+        current = applyPut(current, p, data);
+        emit();
+      } catch (err) {
+        console.warn('[retro] SSE put parse failed', err);
+      }
+    });
+
+    es.addEventListener('patch', (e: MessageEvent) => {
+      try {
+        const { path: p, data } = JSON.parse(e.data);
+        current = applyPatch(current, p, data);
+        emit();
+      } catch (err) {
+        console.warn('[retro] SSE patch parse failed', err);
+      }
+    });
+
+    es.addEventListener('cancel', () => {
+      if (!closed) subscriber.error(new Error('stream cancelled by server'));
+    });
+
+    es.onerror = () => {
+      // EventSource auto-reconnects on transient errors; swallow
+    };
+
+    return () => {
+      closed = true;
+      es.close();
+    };
+  });
 }
