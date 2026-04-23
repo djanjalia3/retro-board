@@ -59,13 +59,10 @@
   <!-- Columns Grid -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     @for (column of b.columns; track column; let i = $index) {
-    <mat-card>
+    <mat-card class="!border-t-4" [ngClass]="columnAccents[i]">
       <mat-card-content class="p-4">
         <!-- Column Header -->
-        <h2
-          class="text-center font-semibold text-white py-2.5 rounded-lg mb-4 text-sm"
-          [ngClass]="columnColors[i]"
-        >
+        <h2 class="font-semibold text-gray-800 mb-4 text-base tracking-tight">
           {{ column }}
         </h2>
 

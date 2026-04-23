@@ -58,7 +58,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     new FormControl(false),
   ]);
 
-  readonly columnColors = ['bg-green-600', 'bg-red-600', 'bg-blue-600'];
+  readonly columnAccents = ['!border-t-emerald-500', '!border-t-rose-500', '!border-t-sky-500'];
 
   readonly participants = computed(() => {
     const map = this.presence();
