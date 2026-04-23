@@ -11,7 +11,7 @@ import {
   onValue,
 } from 'firebase/database';
 import { Observable } from 'rxjs';
-import { RetroBoard, RetroCard } from '../models/retro-board.model';
+import { RetroBoard, RetroCard, RetroParticipant } from '../models/retro-board.model';
 
 export function slugify(name: string): string {
   return name
@@ -87,45 +87,53 @@ export class RetroBoardFirebaseService {
     return remove(ref(this.db, `retro-boards/${boardId}/cards/${cardId}`));
   }
 
+  observePresence(boardId: string): Observable<Record<string, RetroParticipant> | null> {
+    return new Observable((subscriber) => {
+      const presenceRef = ref(this.db, `presence/${boardId}`);
+      const unsubscribe = onValue(
+        presenceRef,
+        (snapshot) => {
+          subscriber.next(snapshot.exists() ? snapshot.val() : null);
+        },
+        (error) => {
+          subscriber.error(error);
+        }
+      );
+      return () => unsubscribe();
+    });
+  }
+
   async joinPresence(
     boardId: string,
     sessionId: string,
     displayName: string
   ): Promise<void> {
-    const key = participantKey(displayName);
-    const base = `retro-boards/${boardId}/participants/${key}`;
-    const participantRef = ref(this.db, base);
-    const connectionRef = ref(this.db, `${base}/connections/${sessionId}`);
-
-    let joinedAt = Date.now();
-    const cleanConnections: Record<string, true> = { [sessionId]: true };
-
     try {
-      const snap = await get(participantRef);
-      const existing = snap.val() as {
-        joinedAt?: unknown;
-        connections?: Record<string, unknown>;
-      } | null;
-      if (typeof existing?.joinedAt === 'number') {
-        joinedAt = existing.joinedAt;
-      }
-      if (existing?.connections && typeof existing.connections === 'object') {
-        for (const [sid, v] of Object.entries(existing.connections)) {
-          if (v === true) cleanConnections[sid] = true;
+      const key = participantKey(displayName);
+      const base = `presence/${boardId}/${key}`;
+      const participantRef = ref(this.db, base);
+      const connectionRef = ref(this.db, `${base}/connections/${sessionId}`);
+      const joinedAtRef = ref(this.db, `${base}/joinedAt`);
+
+      onDisconnect(connectionRef).remove();
+
+      await update(participantRef, {
+        displayName,
+        lastSeen: Date.now(),
+      });
+      await set(connectionRef, true);
+
+      try {
+        const snap = await get(joinedAtRef);
+        if (!snap.exists()) {
+          await set(joinedAtRef, Date.now());
         }
+      } catch {
+        // joinedAt read failed, skip
       }
     } catch (e) {
-      console.warn('[retro] participant read failed, overwriting:', e);
+      console.warn('[retro] joinPresence failed:', e);
     }
-
-    await set(participantRef, {
-      displayName,
-      joinedAt,
-      lastSeen: Date.now(),
-      connections: cleanConnections,
-    });
-
-    onDisconnect(connectionRef).remove();
   }
 
   async voteCard(

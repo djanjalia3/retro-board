@@ -11,7 +11,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RetroBoardFirebaseService } from '../../services/retro-board-firebase.service';
-import { RetroBoard } from '../../models/retro-board.model';
+import { RetroBoard, RetroParticipant } from '../../models/retro-board.model';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -35,8 +35,10 @@ export class BoardComponent implements OnInit, OnDestroy {
   private retroService = inject(RetroBoardFirebaseService);
   private dialog = inject(MatDialog);
   private subscription?: Subscription;
+  private presenceSubscription?: Subscription;
 
   board = signal<RetroBoard | null>(null);
+  presence = signal<Record<string, RetroParticipant> | null>(null);
   boardId = '';
   displayNameControl = new FormControl('');
   displayName = signal('');
@@ -59,7 +61,7 @@ export class BoardComponent implements OnInit, OnDestroy {
   readonly columnColors = ['bg-green-600', 'bg-red-600', 'bg-blue-600'];
 
   readonly participants = computed(() => {
-    const map = this.board()?.participants;
+    const map = this.presence();
     if (!map) return [];
     return Object.values(map)
       .map((p) => ({
@@ -95,6 +97,13 @@ export class BoardComponent implements OnInit, OnDestroy {
             this.loadError.set(err?.message || 'Failed to load board');
           },
         });
+      this.presenceSubscription = this.retroService
+        .observePresence(this.boardId)
+        .subscribe({
+          next: (presence) => {
+            this.presence.set(presence);
+          },
+        });
       if (this.displayName()) {
         this.joinPresence();
       }
@@ -103,6 +112,7 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscription?.unsubscribe();
+    this.presenceSubscription?.unsubscribe();
   }
 
   private getOrCreateSessionId(): string {

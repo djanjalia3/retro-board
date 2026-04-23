@@ -19,5 +19,4 @@ export interface RetroBoard {
   createdAt: number;
   columns: string[];
   cards?: { [cardId: string]: RetroCard };
-  participants?: { [participantKey: string]: RetroParticipant };
 }
