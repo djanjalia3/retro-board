@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormArray, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -58,6 +58,21 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   readonly columnColors = ['bg-green-600', 'bg-red-600', 'bg-blue-600'];
 
+  readonly participants = computed(() => {
+    const map = this.board()?.participants;
+    if (!map) return [];
+    return Object.values(map)
+      .map((p) => ({
+        displayName: p.displayName,
+        joinedAt: p.joinedAt ?? 0,
+        online: !!p.connections && Object.keys(p.connections).length > 0,
+      }))
+      .sort((a, b) => {
+        if (a.online !== b.online) return a.online ? -1 : 1;
+        return a.joinedAt - b.joinedAt;
+      });
+  });
+
   ngOnInit(): void {
     this.sessionId = this.getOrCreateSessionId();
 
@@ -80,6 +95,9 @@ export class BoardComponent implements OnInit, OnDestroy {
             this.loadError.set(err?.message || 'Failed to load board');
           },
         });
+      if (this.displayName()) {
+        this.joinPresence();
+      }
     }
   }
 
@@ -102,6 +120,13 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.displayName.set(name);
     sessionStorage.setItem('retro-display-name', name);
     this.namePromptVisible.set(false);
+    this.joinPresence();
+  }
+
+  private joinPresence(): void {
+    const name = this.displayName();
+    if (!this.boardId || !name) return;
+    this.retroService.joinPresence(this.boardId, this.sessionId, name);
   }
 
   getCardsForColumn(

@@ -7,7 +7,7 @@ import {
   get,
   update,
 } from '@angular/fire/database';
-import { onValue, remove } from 'firebase/database';
+import { onDisconnect, onValue, remove, serverTimestamp } from 'firebase/database';
 import { Observable } from 'rxjs';
 import { RetroBoard, RetroCard } from '../models/retro-board.model';
 
@@ -19,6 +19,11 @@ export function slugify(name: string): string {
     .replace(/[^a-z0-9-]/g, '')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
+}
+
+export function participantKey(displayName: string): string {
+  const slug = slugify(displayName);
+  return slug || `anon-${displayName.length}`;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -78,6 +83,29 @@ export class RetroBoardFirebaseService {
 
   deleteCard(boardId: string, cardId: string): Promise<void> {
     return remove(ref(this.db, `retro-boards/${boardId}/cards/${cardId}`));
+  }
+
+  async joinPresence(
+    boardId: string,
+    sessionId: string,
+    displayName: string
+  ): Promise<void> {
+    const key = participantKey(displayName);
+    const base = `retro-boards/${boardId}/participants/${key}`;
+    const participantRef = ref(this.db, base);
+    const joinedAtRef = ref(this.db, `${base}/joinedAt`);
+    const connectionRef = ref(this.db, `${base}/connections/${sessionId}`);
+
+    const joinedSnap = await get(joinedAtRef);
+    await update(participantRef, {
+      displayName,
+      lastSeen: serverTimestamp(),
+      ...(joinedSnap.exists() ? {} : { joinedAt: serverTimestamp() }),
+    });
+
+    await onDisconnect(connectionRef).remove();
+    await set(connectionRef, true);
+    await onDisconnect(ref(this.db, `${base}/lastSeen`)).set(serverTimestamp());
   }
 
   async voteCard(

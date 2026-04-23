@@ -38,6 +38,24 @@
     </div>
   </div>
 
+  <!-- Participants -->
+  @if (participants().length) {
+    <div class="flex flex-wrap items-center gap-2 mb-4 text-xs text-gray-600">
+      <span class="font-medium text-gray-500">Participants:</span>
+      @for (p of participants(); track p.displayName) {
+        <span class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-2.5 py-1">
+          <span
+            class="inline-block w-2 h-2 rounded-full"
+            [class.bg-green-500]="p.online"
+            [class.bg-gray-300]="!p.online"
+            [attr.title]="p.online ? 'Online' : 'Offline'"
+          ></span>
+          <span [class.text-gray-400]="!p.online">{{ p.displayName }}</span>
+        </span>
+      }
+    </div>
+  }
+
   <!-- Columns Grid -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     @for (column of b.columns; track column; let i = $index) {
