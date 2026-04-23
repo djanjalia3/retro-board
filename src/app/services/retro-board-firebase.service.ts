@@ -9,7 +9,10 @@ import {
   remove,
   onDisconnect,
   onValue,
+  enableLogging,
 } from 'firebase/database';
+
+enableLogging(true);
 import { Observable } from 'rxjs';
 import { RetroBoard, RetroCard, RetroParticipant } from '../models/retro-board.model';
 
