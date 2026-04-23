@@ -208,43 +208,33 @@ export class BoardComponent implements OnInit, OnDestroy {
     });
   }
 
-  async exportToExcel(): Promise<void> {
+  exportToJson(): void {
     const board = this.board();
     if (!board) return;
 
-    const XLSX = await import('xlsx');
+    const cards = Object.values(board.cards ?? {}).map((c) => ({
+      text: c.text,
+      author: c.author,
+      columnIndex: c.columnIndex,
+      votes: c.votes ?? 0,
+    }));
 
-    const columns = board.columns;
-    const rows: Record<string, string>[] = [];
+    const payload = {
+      name: board.name,
+      columns: board.columns,
+      cards,
+      exportedAt: Date.now(),
+      version: 1,
+    };
 
-    const cardsByColumn: string[][][] = columns.map(() => [] as string[][]);
-
-    if (board.cards) {
-      for (const [, card] of Object.entries(board.cards)) {
-        cardsByColumn[card.columnIndex].push([
-          card.text,
-          card.author,
-          String(card.votes),
-        ]);
-      }
-    }
-
-    const maxRows = Math.max(...cardsByColumn.map((c) => c.length), 0);
-
-    for (let r = 0; r < maxRows; r++) {
-      const row: Record<string, string> = {};
-      for (let c = 0; c < columns.length; c++) {
-        const entry = cardsByColumn[c][r];
-        row[`${columns[c]} - Card`] = entry ? entry[0] : '';
-        row[`${columns[c]} - Author`] = entry ? entry[1] : '';
-        row[`${columns[c]} - Votes`] = entry ? entry[2] : '';
-      }
-      rows.push(row);
-    }
-
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Retro Board');
-    XLSX.writeFile(wb, `${board.name.replace(/[^a-zA-Z0-9]/g, '_')}_retro.xlsx`);
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${board.name.replace(/[^a-zA-Z0-9]/g, '_')}_retro.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 }

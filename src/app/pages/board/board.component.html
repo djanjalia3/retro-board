@@ -31,9 +31,9 @@
     <div class="flex items-center gap-4 text-sm text-gray-500">
       <span>Board ID: <code class="bg-gray-200 px-2 py-0.5 rounded text-xs">{{ boardId }}</code></span>
       <span>Joined as: <strong>{{ displayName() }}</strong></span>
-      <button mat-raised-button class="!bg-emerald-600 !text-white" (click)="exportToExcel()">
+      <button mat-raised-button class="!bg-emerald-600 !text-white" (click)="exportToJson()">
         <mat-icon class="mr-1">download</mat-icon>
-        Export Excel
+        Export JSON
       </button>
     </div>
   </div>

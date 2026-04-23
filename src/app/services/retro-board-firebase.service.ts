@@ -58,7 +58,7 @@ async function restDelete(path: string): Promise<void> {
 
 @Injectable({ providedIn: 'root' })
 export class RetroBoardFirebaseService {
-  async createBoard(name: string): Promise<string> {
+  async createBoard(name: string, columns?: string[]): Promise<string> {
     const slug = slugify(name);
     if (!slug) throw new Error('Invalid board name.');
     const existing = await restGet<RetroBoard>(`retro-boards/${slug}`);
@@ -66,9 +66,30 @@ export class RetroBoardFirebaseService {
     const board: RetroBoard = {
       name,
       createdAt: Date.now(),
-      columns: ['What went well', "What didn't go well", 'Shoutouts', 'Action items'],
+      columns:
+        columns && columns.length > 0
+          ? columns
+          : ['What went well', "What didn't go well", 'Shoutouts', 'Action items'],
     };
     await restPut(`retro-boards/${slug}`, board);
+    return slug;
+  }
+
+  async importBoard(
+    name: string,
+    columns: string[],
+    cards: Array<{ text: string; author: string; columnIndex: number; votes: number }>
+  ): Promise<string> {
+    const slug = await this.createBoard(name, columns);
+    for (const c of cards) {
+      await restPost(`retro-boards/${slug}/cards`, {
+        text: c.text,
+        author: c.author || 'Anonymous',
+        columnIndex: c.columnIndex,
+        createdAt: Date.now(),
+        votes: c.votes,
+      });
+    }
     return slug;
   }
 
