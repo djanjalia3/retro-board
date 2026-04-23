@@ -1,13 +1,15 @@
 import { inject, Injectable } from '@angular/core';
+import { Database } from '@angular/fire/database';
 import {
-  Database,
   ref,
   push,
   set,
   get,
   update,
-} from '@angular/fire/database';
-import { onDisconnect, onValue, remove, serverTimestamp } from 'firebase/database';
+  remove,
+  onDisconnect,
+  onValue,
+} from 'firebase/database';
 import { Observable } from 'rxjs';
 import { RetroBoard, RetroCard } from '../models/retro-board.model';
 
@@ -65,9 +67,7 @@ export class RetroBoardFirebaseService {
       const unsubscribe = onValue(
         boardRef,
         (snapshot) => {
-          const val = snapshot.exists() ? snapshot.val() : null;
-          console.log('[retro] onValue fired, cards:', val?.cards ? Object.keys(val.cards).length : 0, 'ids:', val?.cards ? Object.keys(val.cards) : []);
-          subscriber.next(val);
+          subscriber.next(snapshot.exists() ? snapshot.val() : null);
         },
         (error) => {
           subscriber.error(error);
@@ -84,10 +84,7 @@ export class RetroBoardFirebaseService {
   }
 
   deleteCard(boardId: string, cardId: string): Promise<void> {
-    console.log('[retro] deleteCard called:', boardId, cardId);
-    return remove(ref(this.db, `retro-boards/${boardId}/cards/${cardId}`))
-      .then(() => console.log('[retro] deleteCard resolved:', cardId))
-      .catch((e) => { console.error('[retro] deleteCard failed:', e); throw e; });
+    return remove(ref(this.db, `retro-boards/${boardId}/cards/${cardId}`));
   }
 
   async joinPresence(
@@ -104,13 +101,12 @@ export class RetroBoardFirebaseService {
     const joinedSnap = await get(joinedAtRef);
     await update(participantRef, {
       displayName,
-      lastSeen: serverTimestamp(),
-      ...(joinedSnap.exists() ? {} : { joinedAt: serverTimestamp() }),
+      lastSeen: Date.now(),
+      ...(joinedSnap.exists() ? {} : { joinedAt: Date.now() }),
     });
 
-    await onDisconnect(connectionRef).remove();
+    onDisconnect(connectionRef).remove();
     await set(connectionRef, true);
-    await onDisconnect(ref(this.db, `${base}/lastSeen`)).set(serverTimestamp());
   }
 
   async voteCard(
