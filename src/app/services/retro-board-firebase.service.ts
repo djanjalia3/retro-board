@@ -67,7 +67,9 @@ export class RetroBoardFirebaseService {
       const unsubscribe = onValue(
         boardRef,
         (snapshot) => {
-          subscriber.next(snapshot.exists() ? snapshot.val() : null);
+          const val = snapshot.exists() ? snapshot.val() : null;
+          console.log('[retro] onValue fired, cards:', val?.cards ? Object.keys(val.cards).length : 0);
+          subscriber.next(val);
         },
         (error) => {
           subscriber.error(error);
@@ -95,18 +97,37 @@ export class RetroBoardFirebaseService {
     const key = participantKey(displayName);
     const base = `retro-boards/${boardId}/participants/${key}`;
     const participantRef = ref(this.db, base);
-    const joinedAtRef = ref(this.db, `${base}/joinedAt`);
     const connectionRef = ref(this.db, `${base}/connections/${sessionId}`);
 
-    const joinedSnap = await get(joinedAtRef);
-    await update(participantRef, {
+    let joinedAt = Date.now();
+    const cleanConnections: Record<string, true> = { [sessionId]: true };
+
+    try {
+      const snap = await get(participantRef);
+      const existing = snap.val() as {
+        joinedAt?: unknown;
+        connections?: Record<string, unknown>;
+      } | null;
+      if (typeof existing?.joinedAt === 'number') {
+        joinedAt = existing.joinedAt;
+      }
+      if (existing?.connections && typeof existing.connections === 'object') {
+        for (const [sid, v] of Object.entries(existing.connections)) {
+          if (v === true) cleanConnections[sid] = true;
+        }
+      }
+    } catch (e) {
+      console.warn('[retro] participant read failed, overwriting:', e);
+    }
+
+    await set(participantRef, {
       displayName,
+      joinedAt,
       lastSeen: Date.now(),
-      ...(joinedSnap.exists() ? {} : { joinedAt: Date.now() }),
+      connections: cleanConnections,
     });
 
     onDisconnect(connectionRef).remove();
-    await set(connectionRef, true);
   }
 
   async voteCard(
