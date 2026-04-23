@@ -65,7 +65,9 @@ export class RetroBoardFirebaseService {
       const unsubscribe = onValue(
         boardRef,
         (snapshot) => {
-          subscriber.next(snapshot.exists() ? snapshot.val() : null);
+          const val = snapshot.exists() ? snapshot.val() : null;
+          console.log('[retro] onValue fired, cards:', val?.cards ? Object.keys(val.cards).length : 0, 'ids:', val?.cards ? Object.keys(val.cards) : []);
+          subscriber.next(val);
         },
         (error) => {
           subscriber.error(error);
@@ -82,7 +84,10 @@ export class RetroBoardFirebaseService {
   }
 
   deleteCard(boardId: string, cardId: string): Promise<void> {
-    return remove(ref(this.db, `retro-boards/${boardId}/cards/${cardId}`));
+    console.log('[retro] deleteCard called:', boardId, cardId);
+    return remove(ref(this.db, `retro-boards/${boardId}/cards/${cardId}`))
+      .then(() => console.log('[retro] deleteCard resolved:', cardId))
+      .catch((e) => { console.error('[retro] deleteCard failed:', e); throw e; });
   }
 
   async joinPresence(

@@ -89,6 +89,7 @@ export class BoardComponent implements OnInit, OnDestroy {
         .observeBoard(this.boardId)
         .subscribe({
           next: (board) => {
+            console.log('[retro] component received board update, cards:', board?.cards ? Object.keys(board.cards).length : 0);
             this.board.set(board);
           },
           error: (err) => {
