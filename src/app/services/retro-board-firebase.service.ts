@@ -67,9 +67,7 @@ export class RetroBoardFirebaseService {
       const unsubscribe = onValue(
         boardRef,
         (snapshot) => {
-          const val = snapshot.exists() ? snapshot.val() : null;
-          console.log('[retro] onValue fired, cards:', val?.cards ? Object.keys(val.cards).length : 0);
-          subscriber.next(val);
+          subscriber.next(snapshot.exists() ? snapshot.val() : null);
         },
         (error) => {
           subscriber.error(error);
