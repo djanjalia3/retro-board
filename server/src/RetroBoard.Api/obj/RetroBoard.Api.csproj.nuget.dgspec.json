@@ -1,0 +1,331 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Api/RetroBoard.Api.csproj": {}
+  },
+  "projects": {
+    "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Api/RetroBoard.Api.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Api/RetroBoard.Api.csproj",
+        "projectName": "RetroBoard.Api",
+        "projectPath": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Api/RetroBoard.Api.csproj",
+        "packagesPath": "/Users/davitjanjalia/.nuget/packages/",
+        "outputPath": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Api/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/davitjanjalia/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Application/RetroBoard.Application.csproj": {
+                "projectPath": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Application/RetroBoard.Application.csproj"
+              },
+              "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Infrastructure/RetroBoard.Infrastructure.csproj": {
+                "projectPath": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Infrastructure/RetroBoard.Infrastructure.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "FluentValidation.AspNetCore": {
+              "target": "Package",
+              "version": "[11.3.0, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[12.4.1, )"
+            },
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[9.0.15, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[7.2.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/Users/davitjanjalia/.dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Application/RetroBoard.Application.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Application/RetroBoard.Application.csproj",
+        "projectName": "RetroBoard.Application",
+        "projectPath": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Application/RetroBoard.Application.csproj",
+        "packagesPath": "/Users/davitjanjalia/.nuget/packages/",
+        "outputPath": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Application/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/davitjanjalia/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Domain/RetroBoard.Domain.csproj": {
+                "projectPath": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Domain/RetroBoard.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[11.10.0, )"
+            },
+            "FluentValidation.DependencyInjectionExtensions": {
+              "target": "Package",
+              "version": "[11.10.0, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[12.4.1, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
+            "Microsoft.Extensions.Logging.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/Users/davitjanjalia/.dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Domain/RetroBoard.Domain.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Domain/RetroBoard.Domain.csproj",
+        "projectName": "RetroBoard.Domain",
+        "projectPath": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Domain/RetroBoard.Domain.csproj",
+        "packagesPath": "/Users/davitjanjalia/.nuget/packages/",
+        "outputPath": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Domain/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/davitjanjalia/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/Users/davitjanjalia/.dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Infrastructure/RetroBoard.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Infrastructure/RetroBoard.Infrastructure.csproj",
+        "projectName": "RetroBoard.Infrastructure",
+        "projectPath": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Infrastructure/RetroBoard.Infrastructure.csproj",
+        "packagesPath": "/Users/davitjanjalia/.nuget/packages/",
+        "outputPath": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Infrastructure/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/davitjanjalia/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Application/RetroBoard.Application.csproj": {
+                "projectPath": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Application/RetroBoard.Application.csproj"
+              },
+              "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Domain/RetroBoard.Domain.csproj": {
+                "projectPath": "/Users/davitjanjalia/Desktop/retro-board/server/src/RetroBoard.Domain/RetroBoard.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[9.0.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/Users/davitjanjalia/.dotnet/sdk/9.0.313/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

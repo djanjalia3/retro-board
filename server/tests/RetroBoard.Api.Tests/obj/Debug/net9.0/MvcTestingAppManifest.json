@@ -1,0 +1,6 @@
+{
+  "RetroBoard.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/Users\/davitjanjalia\/Desktop\/retro-board\/server\/src\/RetroBoard.Api",
+  "RetroBoard.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/Users\/davitjanjalia\/Desktop\/retro-board\/server\/src\/RetroBoard.Application",
+  "RetroBoard.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/Users\/davitjanjalia\/Desktop\/retro-board\/server\/src\/RetroBoard.Domain",
+  "RetroBoard.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/Users\/davitjanjalia\/Desktop\/retro-board\/server\/src\/RetroBoard.Infrastructure"
+}
