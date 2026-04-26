@@ -4,13 +4,8 @@ import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { RetroBoardFirebaseService } from '../../services/retro-board-firebase.service';
-
-interface BoardListItem {
-  id: string;
-  name: string;
-  createdAt: number;
-}
+import { RetroBoardApiService } from '../../services/retro-board-api.service';
+import { RetroBoardSummary } from '../../models/retro-board.model';
 
 @Component({
   selector: 'app-boards-all',
@@ -19,9 +14,9 @@ interface BoardListItem {
   templateUrl: './boards-all.component.html',
 })
 export class BoardsAllComponent implements OnInit {
-  private retroService = inject(RetroBoardFirebaseService);
+  private retroService = inject(RetroBoardApiService);
 
-  boards = signal<BoardListItem[] | null>(null);
+  boards = signal<RetroBoardSummary[] | null>(null);
   error = signal('');
 
   async ngOnInit(): Promise<void> {

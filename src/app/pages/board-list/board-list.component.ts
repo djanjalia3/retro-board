@@ -7,9 +7,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import {
-  RetroBoardFirebaseService,
+  RetroBoardApiService,
   slugify,
-} from '../../services/retro-board-firebase.service';
+} from '../../services/retro-board-api.service';
 
 @Component({
   selector: 'app-board-list',
@@ -19,7 +19,7 @@ import {
 })
 export class BoardListComponent {
   private router = inject(Router);
-  private retroService = inject(RetroBoardFirebaseService);
+  private retroService = inject(RetroBoardApiService);
 
   boardName = new FormControl('');
   joinCode = new FormControl('');

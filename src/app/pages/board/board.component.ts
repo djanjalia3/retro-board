@@ -10,7 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { RetroBoardFirebaseService, participantKey } from '../../services/retro-board-firebase.service';
+import { RetroBoardApiService } from '../../services/retro-board-api.service';
 import { RetroBoard, RetroParticipant } from '../../models/retro-board.model';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 
@@ -32,19 +32,21 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
 })
 export class BoardComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
-  private retroService = inject(RetroBoardFirebaseService);
+  private retroService = inject(RetroBoardApiService);
   private dialog = inject(MatDialog);
   private subscription?: Subscription;
   private presenceSubscription?: Subscription;
 
   board = signal<RetroBoard | null>(null);
-  presence = signal<Record<string, RetroParticipant> | null>(null);
+  presence = signal<RetroParticipant[] | null>(null);
   boardId = '';
   displayNameControl = new FormControl('');
   displayName = signal('');
   namePromptVisible = signal(true);
   sessionId = '';
   loadError = signal('');
+
+  private votedCards = signal<Set<string>>(new Set());
 
   newCardTexts = new FormArray<FormControl<string | null>>([]);
   postAnonymously = new FormArray<FormControl<boolean | null>>([]);
@@ -57,17 +59,17 @@ export class BoardComponent implements OnInit, OnDestroy {
   ];
 
   readonly participants = computed(() => {
-    const map = this.presence();
-    if (!map) return [];
-    return Object.values(map)
+    const list = this.presence();
+    if (!list) return [];
+    return list
       .map((p) => ({
         displayName: p.displayName,
-        joinedAt: p.joinedAt ?? 0,
-        online: !!p.connections && Object.keys(p.connections).length > 0,
+        joinedAt: p.joinedAt,
+        online: p.connectionCount > 0,
       }))
       .sort((a, b) => {
         if (a.online !== b.online) return a.online ? -1 : 1;
-        return a.joinedAt - b.joinedAt;
+        return a.joinedAt.localeCompare(b.joinedAt);
       });
   });
 
@@ -108,7 +110,6 @@ export class BoardComponent implements OnInit, OnDestroy {
       if (this.displayName()) {
         this.joinPresence();
       }
-      window.addEventListener('beforeunload', this.onBeforeUnload);
     }
   }
 
@@ -117,21 +118,9 @@ export class BoardComponent implements OnInit, OnDestroy {
     this.presenceSubscription?.unsubscribe();
     const name = this.displayName();
     if (this.boardId && name) {
-      this.retroService.leavePresence(this.boardId, this.sessionId, name);
+      this.retroService.leavePresence(this.boardId);
     }
-    window.removeEventListener('beforeunload', this.onBeforeUnload);
   }
-
-  private onBeforeUnload = (): void => {
-    const name = this.displayName();
-    if (!this.boardId || !name) return;
-    const url = `https://retro-board-75e44-default-rtdb.firebaseio.com/presence/${this.boardId}/${participantKey(name)}/connections/${this.sessionId}.json`;
-    try {
-      fetch(url, { method: 'DELETE', keepalive: true });
-    } catch {
-      // best-effort
-    }
-  };
 
   private getOrCreateSessionId(): string {
     let id = sessionStorage.getItem('retro-session-id');
@@ -161,15 +150,16 @@ export class BoardComponent implements OnInit, OnDestroy {
     columnIndex: number
   ): { id: string; text: string; author: string; votes: number; hasVoted: boolean }[] {
     const board = this.board();
-    if (!board?.cards) return [];
-    return Object.entries(board.cards)
-      .filter(([, card]) => card.columnIndex === columnIndex)
-      .map(([id, card]) => ({
-        id,
-        text: card.text,
-        author: card.author,
-        votes: card.votes,
-        hasVoted: !!(card.voters && card.voters[this.sessionId]),
+    if (!board) return [];
+    const voted = this.votedCards();
+    return board.cards
+      .filter(c => c.columnIndex === columnIndex)
+      .map(c => ({
+        id: c.id,
+        text: c.text,
+        author: c.author,
+        votes: c.votes,
+        hasVoted: voted.has(c.id),
       }));
   }
 
@@ -179,17 +169,17 @@ export class BoardComponent implements OnInit, OnDestroy {
     if (!text) return;
     const isAnonymous = this.postAnonymously.at(columnIndex).value;
     const author = isAnonymous ? 'Anonymous' : this.displayName();
-    await this.retroService.addCard(this.boardId, {
-      text,
-      author,
-      columnIndex,
-      createdAt: Date.now(),
-    });
+    await this.retroService.addCard(this.boardId, { text, author, columnIndex });
     control.reset('');
   }
 
-  vote(cardId: string): void {
-    this.retroService.voteCard(this.boardId, cardId, this.sessionId);
+  async vote(cardId: string): Promise<void> {
+    const voted = await this.retroService.voteCard(this.boardId, cardId, this.sessionId);
+    if (voted) {
+      const next = new Set(this.votedCards());
+      next.add(cardId);
+      this.votedCards.set(next);
+    }
   }
 
   removeCard(cardId: string): void {
@@ -212,7 +202,7 @@ export class BoardComponent implements OnInit, OnDestroy {
     const board = this.board();
     if (!board) return;
 
-    const cards = Object.values(board.cards ?? {}).map((c) => ({
+    const cards = (board.cards ?? []).map((c) => ({
       text: c.text,
       author: c.author,
       columnIndex: c.columnIndex,
@@ -221,7 +211,7 @@ export class BoardComponent implements OnInit, OnDestroy {
 
     const payload = {
       name: board.name,
-      columns: board.columns,
+      columns: board.columns.map(c => c.title),
       cards,
       exportedAt: Date.now(),
       version: 1,
