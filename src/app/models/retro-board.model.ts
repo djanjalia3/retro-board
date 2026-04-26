@@ -1,22 +1,44 @@
-export interface RetroCard {
-  text: string;
-  author: string;
-  columnIndex: number;
-  createdAt: number;
-  votes: number;
-  voters?: { [sessionId: string]: boolean };
+export interface RetroColumn {
+  id: number;
+  position: number;
+  title: string;
 }
 
-export interface RetroParticipant {
-  displayName: string;
-  joinedAt: number;
-  lastSeen?: number;
-  connections?: { [sessionId: string]: true };
+export interface RetroCard {
+  id: string;
+  columnId: number;
+  columnIndex: number;
+  text: string;
+  author: string;
+  createdAt: string;
+  votes: number;
 }
 
 export interface RetroBoard {
+  id: number;
+  slug: string;
   name: string;
-  createdAt: number;
-  columns: string[];
-  cards?: { [cardId: string]: RetroCard };
+  createdAt: string;
+  columns: RetroColumn[];
+  cards: RetroCard[];
+}
+
+export interface RetroBoardSummary {
+  id: number;
+  slug: string;
+  name: string;
+  createdAt: string;
+}
+
+export interface RetroParticipant {
+  participantKey: string;
+  displayName: string;
+  joinedAt: string;
+  lastSeenAt: string;
+  connectionCount: number;
+}
+
+export interface VoteResult {
+  voted: boolean;
+  votes: number;
 }
