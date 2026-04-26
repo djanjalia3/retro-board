@@ -1,0 +1,69 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    timeout-minutes: 15
+    steps:
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H drascula.tail884b89.ts.net >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Pull, build, restart
+        run: |
+          ssh -i ~/.ssh/id_ed25519 alucsard@drascula.tail884b89.ts.net 'bash -s' <<'EOF'
+            set -euo pipefail
+            cd ~/docker/retro-board
+            echo "==> git pull"
+            git pull --ff-only
+            echo "==> docker compose up -d --build"
+            docker compose -f docker-compose.prod.yml --env-file .env up -d --build
+            echo "==> deploy command finished"
+          EOF
+
+      - name: Health check
+        run: |
+          ssh -i ~/.ssh/id_ed25519 alucsard@drascula.tail884b89.ts.net 'bash -s' <<'EOF'
+            set -euo pipefail
+            cd ~/docker/retro-board
+            echo "==> waiting 20s for services to start"
+            sleep 20
+            echo "==> container status"
+            docker compose -f docker-compose.prod.yml ps
+            echo "==> web container HTTP probe (localhost:8081) — up to 12×5s"
+            for i in $(seq 1 12); do
+              if curl -f -s -o /dev/null http://localhost:8081; then
+                echo "==> web is responding (attempt $i)"
+                docker compose -f docker-compose.prod.yml ps
+                exit 0
+              fi
+              echo "attempt $i failed, retrying in 5s..."
+              sleep 5
+            done
+            echo "::error::web did not respond on localhost:8081 after 12 attempts (~60s)"
+            docker compose -f docker-compose.prod.yml ps
+            docker compose -f docker-compose.prod.yml logs --tail=80 web api
+            exit 1
+          EOF
