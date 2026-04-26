@@ -26,7 +26,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHostedService<PresenceSweeperService>();
 
 builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
-    .WithOrigins("http://localhost:4200")
+    .WithOrigins("http://localhost:4200", "http://localhost:4201")
     .AllowAnyHeader()
     .AllowAnyMethod()
     .AllowCredentials()));
